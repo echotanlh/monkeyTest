@@ -23,6 +23,8 @@ from Base import BaseMonkeyConfig
 from Base import BasePhoneMsg
 from Base import BaseMonitor
 
+import logging
+
 PATH = lambda p: os.path.abspath(
     os.path.join(os.path.dirname(__file__), p)
 )
@@ -32,6 +34,8 @@ ba = AdbCommon.AndroidDebugBridge()
 
 info = []
 
+
+logging.basicConfig(filename='logger.log', level=logging.INFO)
 
 # 手机信息
 def get_phome(devices):
@@ -52,6 +56,7 @@ def mkdirInit(devices, app, data=None):
     battery = PATH("./info/" + devices + "_battery.pickle")
     fps = PATH("./info/" + devices + "_fps.pickle")
     app[devices] = {"cpu": cpu, "men": men, "flow": flow, "battery": battery, "fps": fps, "header": get_phome(devices)}
+    logging.info("app[devices](%s)" % app[devices])
     OperateFile(cpu).mkdir_file()
     OperateFile(men).mkdir_file()
     OperateFile(flow).mkdir_file()
@@ -64,7 +69,7 @@ def mkdirInit(devices, app, data=None):
 
 def runnerPool():
     shutil.rmtree((PATH("./info/")))  # 删除持久化目录
-    os.makedirs(PATH("./info/")) # 创建持久化目录
+    os.makedirs(PATH("./info/"))   # 创建持久化目录
     devices_Pool = []
     devices = ba.attached_devices()
     if devices:
@@ -74,6 +79,7 @@ def runnerPool():
             _app["num"] = len(devices)
             devices_Pool.append(_app)
         pool = Pool(len(devices))
+        print(devices_Pool)
         pool.map(start, devices_Pool)
         pool.close()
         pool.join()
@@ -82,6 +88,7 @@ def runnerPool():
 
 
 def start(devicess):
+    logging.info("start(%s)" % devicess)
     devices = devicess["devices"]
     num = devicess["num"]
     app = {}
@@ -93,10 +100,12 @@ def start(devicess):
     mc["log"] = PATH("./log") + "\\" + str(uuid.uuid4())
     mc["monkey_log"] = mc["log"] + "monkey.log"
     mc["cmd"] = mc['cmd'] + mc["monkey_log"]
+    logging.info("mc: %s" % mc)
     start_monkey("adb -s " + devices + " shell " + mc["cmd"], mc["log"])
     time.sleep(1)
     starttime = datetime.datetime.now()
-    pid = BaseMonitor.get_pid(mc["package_name"], devices)
+    pid_dict = BaseMonitor.get_pid(mc["package_name"], devices)
+    pid = pid_dict[mc["package_name"]]
     cpu_kel = BaseMonitor.get_cpu_kel(devices)
     beforeBattery = BaseMonitor.get_battery(devices)
     while True:
@@ -130,6 +139,7 @@ def start(devicess):
 # 开始脚本测试
 def start_monkey(cmd, log):
     # Monkey测试结果日志:monkey_log
+    print(cmd)
     os.popen(cmd)
     print(cmd)
 
@@ -151,4 +161,3 @@ if __name__ == '__main__':
     killport()
     time.sleep(1)
     runnerPool()
- 

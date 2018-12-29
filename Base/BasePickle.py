@@ -88,6 +88,7 @@ if __name__ == "__main__":
     # readInfo(PATH("../info/emulator-5554_battery.pickle"))
     # readInfo(PATH("../info/emulator-5554_men.pickle"))
     # readInfo(PATH("../info/DU2TAN15AJ049163_men.pickle"))
-    # readInfo(PATH("../info/emulator-5554_flow.pickle"))
-    readInfo("E:\\app\\py\\monkey1\\info\\info.pickle")
+    # 获取对应的设备下的cpu信息，cpu的信息按照时间节点，先后排序为一个列表
+    readInfo(PATH("E:\\Python\\monkeyTest\\info\\37KNW18529001041_cpu.pickle"))
+    # readInfo("E:\\Python\\monkeyTest\\info\\info.pickle")
     # readInfo(PATH("../info/DU2TAN15AJ049163_cpu.pickle"))

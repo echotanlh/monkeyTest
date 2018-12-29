@@ -4,6 +4,7 @@ import os
 '''
 基本的adb操作
 '''
+
 class AndroidDebugBridge(object):
     def call_adb(self, command):
         command_result = ''
@@ -23,15 +24,16 @@ class AndroidDebugBridge(object):
 
     # 检查设备
     def attached_devices(self):
-        result = self.call_adb("devices")
-        devices = result.partition('\n')[2].replace('\n', '').split('\tdevice')
-        return [device for device in devices if len(device) > 2]
+        result = self.call_adb("devices").split("\n")
+        devices = [line.strip().split('\t')[0] for line in result if '\t' in line]
+        return devices
+
     # 状态
     def get_state(self):
         result = self.call_adb("get-state")
         result = result.strip(' \t\n\r')
         return result or None
-    #重启
+    # 重启
     def reboot(self, option):
         command = "reboot"
         if len(option) > 7 and option in ("bootloader", "recovery",):
@@ -74,9 +76,8 @@ class AndroidDebugBridge(object):
         # print(result[4])
         return result[4]
 
+
 if __name__ == '__main__':
 
     reuslt = AndroidDebugBridge().attached_devices()
-    for info in reuslt:
-
-        print(info)
+    print(reuslt)

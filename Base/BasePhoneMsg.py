@@ -33,9 +33,14 @@ def getModel( devices):
     print(cmd)
     # output = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.readlines()
     output = subprocess.check_output(cmd).decode()
-    result["release"] = re.findall("version.release=(\d\.\d)*", output, re.S)[0] #  Android 系统，如anroid 4.0
-    result["phone_name"] = re.findall("ro.product.model=(\S+)*", output, re.S)[0] # 手机名
-    result["phone_model"] = re.findall("ro.product.brand=(\S+)*", output, re.S)[0] # 手机品牌
+    if 'Permission denied' in output:
+        result["release"] = "Permission denied"
+        result["phone_name"] = "Permission denied"
+        result["phone_model"] = "Permission denied"
+    else:
+        result["release"] = re.findall("version.release=(\d\.\d)*", output, re.S)[0] #  Android 系统，如anroid 4.0
+        result["phone_name"] = re.findall("ro.product.model=(\S+)*", output, re.S)[0] # 手机名
+        result["phone_model"] = re.findall("ro.product.brand=(\S+)*", output, re.S)[0] # 手机品牌
     return result
 
 
@@ -70,4 +75,5 @@ def get_phone_Kernel(devices):
     return phone_msg, men_total, cpu_sum, pix
 if __name__ == '__main__':
     # get_app_pix("emulator-5554")
-    stop_monkey("DU2TAN15AJ049163")
+    # stop_monkey("DU2TAN15AJ049163")
+    getModel('37KNW18529001041')

@@ -105,14 +105,13 @@ def get_battery(devices):
 
 
 def get_pid(pkg_name, devices):
-    cmd = "adb -s " + devices + " shell ps | findstr " + pkg_name
-    print("----get_pid-------")
-    print(cmd)
-    pid = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE).stdout.readlines()
-    for item in pid:
-        if item.split()[8].decode() == pkg_name:
-            return item.split()[1].decode()
+    # 获取指定设备下，包含指定进程名的进程id
+    cmd = "adb -s " + devices + " shell ps -ef | findstr " + pkg_name
+    p1 = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    pid_string = p1.stdout.readlines()
+    pid_string = [line.decode() for line in pid_string]
+    pid_message = {line.split()[-1]: line.split()[1] for line in pid_string}
+    return pid_message
 
 
 def get_flow(pid, type, devices):
@@ -120,21 +119,22 @@ def get_flow(pid, type, devices):
     upflow = downflow = 0
     if pid is not None:
         cmd = "adb -s " + devices + " shell cat /proc/" + pid + "/net/dev"
-        print(cmd)
+        print("cmd:", cmd)
         _flow = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE).stdout.readlines()
         for item in _flow:
-            if type == "wifi" and item.split()[0].decode() == "wlan0:":  # wifi
+            item = item.decode()
+            if type == "wifi" and item.split()[0] == "wlan0:":  # wifi
                 # 0 上传流量，1 下载流量
-                upflow = int(item.split()[1].decode())
-                downflow = int(item.split()[9].decode())
+                upflow = int(item.split()[1])
+                downflow = int(item.split()[9])
                 print("------flow---------")
                 print(upflow)
                 break
-            if type == "gprs" and item.split()[0].decode() == "rmnet0:":  # gprs
+            if type == "gprs" and item.split()[0] == "rmnet0:":  # gprs
                 print("-----flow---------")
-                upflow = int(item.split()[1].decode())
-                downflow = int(item.split()[9].decode())
+                upflow = int(item.split()[1])
+                downflow = int(item.split()[9])
                 print(upflow)
                 break
 
@@ -258,15 +258,15 @@ def cpu_rate(pid, cpukel, devices):
 if __name__ == '__main__':
 
     # cpu_rate("2749")
-    pid = get_pid("com.jianshu.haruki", "DU2TAN15AJ049163")
-    # print(pid)
+    # 获取对应进程id
+    pid = get_pid("com.netease.play", "37KNW18529001041")
+    print(pid)
     # get_flow(pid, "wifi", "DU2TAN15AJ049163")
-    # get_battery("DU2TAN15AJ049163")
-    # get_men("com.jianshu.haruki", "DU2TAN15AJ049163")
-    # print(get_cpu_kel())
-    # cpu_kel = get_cpu_kel("DU2TAN15AJ049163")
-    # print(cpu_rate(pid,cpu_kel,"DU2TAN15AJ049163"))
-    get_flow(pid, "gprs", "emulator-5554")
-    # print(get_flow("com.jianshu.haruki", "gprs"))
-    # print(get_flow("com.jianshu.haruki", "gprs"))
-    # print(get_flow("com.jianshu.haruki", "gprs"))
+    # get_battery("37KNW18529001041")
+    # get_men("com.netease.play", "37KNW18529001041")
+    # print(get_cpu_kel("37KNW18529001041"))
+    # cpu_kel = get_cpu_kel("37KNW18529001041")
+    # print(cpu_rate(pid["com.netease.play"], cpu_kel, "37KNW18529001041"))
+    # get_flow(pid["com.netease.play"], "wifi", "37KNW18529001041")
+    print(get_flow(pid["com.netease.play"], "gprs", "37KNW18529001041"))
+
